@@ -1,0 +1,66 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+datos <- paste(getwd(),"/datos_nube_v2.csv", sep = "")
+
+nube <- read.csv(datos, encoding="UTF-8", header=TRUE, sep=",", na.strings="NA", dec=".", strip.white=TRUE)
+
+nube.scale <- as.data.frame(scale(nube[,6:11])) # escalar los datos 8:10
+
+#aseguradora = datos
+#insurance = nube
+
+```
+
+```{r paso2}
+set.seed(80) # fijar semilla
+
+nube.km <- kmeans(na.omit(nube.scale), centers = 6)  #kmeans(insurance.scale, centers = 4)# Realizamos clustering
+
+nube.km #para que se asignen los datos en los clusters
+
+#km_cluster <- kmeans(na.omit(MyData), 3)
+#km_cluster
+#km_cluster$withinss
+#km_cluster$tot.withinss/km_cluster$betweenss
+
+names(nube.km) # contenido del objeto
+```
+
+
+```{r paso3}
+head(nube.km$cluster) #enseña la cantidad de clusters 
+nube.km$totss # inercia total cuan cerca estan sus ejes dentro de si
+nube.km$betweenss # inercia inter grupos cuan relacionados estan los grupos "clusters" nos intereza que sea lo mas alta posible
+nube.km$withinss #inercia dentro de los grupos
+nube.km$tot.withinss #inercia dentro de los grupos nos intereza que sea el menor posible
+```
+
+```{r paso4}
+#VERIFICAMOS LA CANTIDAD DE CLUSTERS NECESARIOS 
+sumbt<-kmeans(na.omit(nube.scale),centers = 1)$betweenss
+
+for(i in 2:10) sumbt[i] <- kmeans(na.omit(nube.scale),i)$betweenss
+
+plot(1:10, sumbt, type = "b", xlab = "número de clusters", ylab = "suma de cuadrados ínter grupos")
+```
+
+
+```{r paso5}
+plot(nube$VENTAS,nube$CANTIDADEMPLEADOS, col=nube.km$cluster ,xlab = "VENTAS", ylab = "CANTIDAD DE EMPLEADOS" )
+
+#el cluster azul/ verde indica ventas que los empleados han hecho a la compañia y tienen cierta cantidad de empleados
+
+
+aggregate(na.omit( nube[,6:11]),by = list(na.omit(nube.km$cluster )), mean)
+#seleccionamos las variables de inicio y las asignamos segun el cluster al que fueron asignadas y sacamos la media
+
+#Podemos ver que en el cluster 2 hay uso de la nube y una de las mejores visualizaciones de ventas tambien se puede apreciar que hay este cluster hay una media de 614 recursos en la nube.
+
+
+```
+
